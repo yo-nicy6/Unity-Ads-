@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EarnCoins — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f5;
+    --white: #ffffff;
+    --black: #111111;
+    --gray: #888888;
+    --gray2: #cccccc;
+    --border: #e0e0e0;
+    --card: #ffffff;
+    --red: #e02020;
+    --blue: #1a6ef5;
+    --green: #00a85a;
+    --orange: #f59e0b;
+    --text: #111111;
+    --muted: #666666;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* ── AUTH ── */
+  #admin-auth {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+    background: var(--white);
+  }
+  .admin-auth-box { width:100%; max-width:360px; }
+  .admin-auth-box .logo {
+    text-align: center; margin-bottom: 2rem;
+  }
+  .admin-auth-box .logo h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem; letter-spacing: 3px; color: var(--black);
+  }
+  .admin-auth-box .logo p { font-size: .8rem; color: var(--muted); margin-top: .2rem; }
+
+  .a-field { margin-bottom: 1rem; }
+  .a-field label { display:block; font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:.35rem; }
+  .a-field input {
+    width:100%; border:1.5px solid var(--border); border-radius:8px;
+    padding:.75rem 1rem; color:var(--text); font-size:.92rem; font-family:inherit;
+    outline:none; background:var(--white); transition:.2s;
+  }
+  .a-field input:focus { border-color:var(--black); }
+  .a-err { color:var(--red); font-size:.78rem; min-height:1rem; margin-bottom:.5rem; }
+  .a-submit {
+    width:100%; padding:.9rem; border:none; border-radius:8px;
+    background:var(--black); color:var(--white);
+    font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:2px;
+    cursor:pointer; transition:.15s;
+  }
+  .a-submit:hover { background:#333; }
+
+  /* ── PANEL ── */
+  #admin-panel { display:none; min-height:100vh; flex-direction:column; }
+  #admin-panel.show { display:flex; }
+
+  /* Header */
+  .adm-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--border);
+    padding: 1rem 1.4rem;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top:0; z-index:50;
+  }
+  .adm-header h1 { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:2px; }
+  .adm-header-right { display:flex; align-items:center; gap:.8rem; }
+  .adm-tag {
+    background:var(--black); color:var(--white);
+    border-radius:20px; padding:.3rem .8rem;
+    font-size:.7rem; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  }
+  .adm-logout {
+    background:none; border:1.5px solid var(--border); border-radius:8px;
+    padding:.35rem .75rem; cursor:pointer; font-size:.78rem; color:var(--muted);
+    font-family:inherit;
+  }
+  .adm-logout:hover { border-color:var(--red); color:var(--red); }
+
+  /* Tab nav */
+  .adm-tabs {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--border);
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .adm-tabs::-webkit-scrollbar { display:none; }
+  .adm-tab {
+    padding: .75rem 1.2rem;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: .83rem;
+    font-weight: 600;
+    color: var(--muted);
+    border-bottom: 2.5px solid transparent;
+    background: none;
+    border-left:none; border-right:none; border-top:none;
+    font-family: inherit;
+    transition: .15s;
+  }
+  .adm-tab.active { color: var(--black); border-bottom-color: var(--black); }
+
+  /* Content */
+  .adm-content { padding: 1.4rem; max-width: 780px; margin: 0 auto; width: 100%; flex:1; }
+
+  /* Panels */
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* Cards */
+  .adm-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+  .adm-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 1.5px;
+    color: var(--black);
+    margin-bottom: 1rem;
+    padding-bottom: .6rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Stats */
+  .adm-stats { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:1.2rem; }
+  @media(min-width:500px){.adm-stats{grid-template-columns:repeat(4,1fr);}}
+  .adm-stat { background:var(--white); border:1.5px solid var(--border); border-radius:12px; padding:.9rem 1rem; }
+  .adm-stat .sv { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:1px; color:var(--black); }
+  .adm-stat .sl { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-top:.1rem; }
+
+  /* Form fields */
+  .f-row { display:grid; gap:.8rem; margin-bottom:.9rem; }
+  @media(min-width:480px){ .f-row.two { grid-template-columns:1fr 1fr; } }
+  .f-field label { display:block; font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:.35rem; }
+  .f-field input, .f-field select, .f-field textarea {
+    width:100%; border:1.5px solid var(--border); border-radius:8px;
+    padding:.68rem .9rem; color:var(--text); font-size:.88rem; font-family:inherit;
+    outline:none; background:var(--white); transition:.2s;
+  }
+  .f-field input:focus,.f-field select:focus,.f-field textarea:focus { border-color:var(--black); }
+  .f-field textarea { resize:vertical; min-height:80px; }
+
+  /* Toggle */
+  .f-toggle { display:flex; align-items:center; justify-content:space-between; padding:.5rem 0; }
+  .f-toggle-lbl { font-size:.88rem; }
+  .toggle { position:relative; width:44px; height:24px; cursor:pointer; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-sl { position:absolute; inset:0; background:var(--gray2); border-radius:999px; transition:.3s; }
+  .toggle-sl::before { content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:var(--white); border-radius:50%; transition:.3s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .toggle input:checked + .toggle-sl { background:var(--black); }
+  .toggle input:checked + .toggle-sl::before { transform:translateX(20px); }
+
+  /* Buttons */
+  .btn { padding:.6rem 1.1rem; border-radius:8px; cursor:pointer; font-size:.83rem; font-family:inherit; font-weight:600; border:none; transition:.15s; }
+  .btn-black { background:var(--black); color:var(--white); }
+  .btn-black:hover { background:#333; }
+  .btn-outline { background:none; border:1.5px solid var(--border); color:var(--muted); }
+  .btn-outline:hover { border-color:var(--black); color:var(--black); }
+  .btn-red { background:none; border:1.5px solid rgba(224,32,32,.3); color:var(--red); }
+  .btn-green { background:none; border:1.5px solid rgba(0,168,90,.3); color:var(--green); }
+  .btn-sm { padding:.35rem .65rem; font-size:.75rem; }
+  .btn-row { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.8rem; }
+
+  /* Table */
+  .tbl-wrap { overflow-x:auto; border-radius:12px; border:1.5px solid var(--border); }
+  table { width:100%; border-collapse:collapse; }
+  th { padding:.6rem .9rem; font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; text-align:left; background:var(--bg); white-space:nowrap; }
+  td { padding:.72rem .9rem; font-size:.84rem; border-top:1px solid var(--border); vertical-align:middle; }
+  .badge { font-size:.68rem; font-weight:700; padding:.18rem .5rem; border-radius:20px; text-transform:uppercase; }
+  .badge.pending { background:rgba(245,158,11,.12); color:var(--orange); }
+  .badge.approved { background:rgba(0,168,90,.12); color:var(--green); }
+  .badge.rejected { background:rgba(224,32,32,.1); color:var(--red); }
+
+  /* Opt cards */
+  .opt-list { display:flex; flex-direction:column; gap:.6rem; }
+  .opt-card { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:.9rem 1rem; display:flex; align-items:center; gap:.8rem; }
+  .opt-info { flex:1; }
+  .opt-info .ot { font-weight:600; font-size:.9rem; }
+  .opt-info .om { font-size:.75rem; color:var(--muted); margin-top:.1rem; }
+  .opt-actions { display:flex; gap:.4rem; }
+
+  /* Empty */
+  .empty { text-align:center; color:var(--muted); padding:2rem; font-size:.85rem; }
+
+  /* Toast */
+  .toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(10px); background:var(--black); color:var(--white); padding:.6rem 1.3rem; border-radius:999px; font-size:.85rem; font-weight:600; opacity:0; transition:.3s; z-index:9999; white-space:nowrap; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH ══ -->
+<div id="admin-auth">
+  <div class="admin-auth-box">
+    <div class="logo">
+      <h1>ADMIN PANEL</h1>
+      <p>EarnCoins — Admin Access Only</p>
+    </div>
+    <div class="a-field"><label>Email</label><input type="email" id="a-email" placeholder="admin@email.com" value="linex@gmail.com"></div>
+    <div class="a-field"><label>Password</label><input type="password" id="a-pass" placeholder="••••••••" value="linex123"></div>
+    <div class="a-err" id="a-err"></div>
+    <button class="a-submit" onclick="adminLogin()">LOGIN TO ADMIN</button>
+  </div>
+</div>
+
+<!-- ══ PANEL ══ -->
+<div id="admin-panel">
+
+  <div class="adm-header">
+    <h1>⚙️ ADMIN PANEL</h1>
+    <div class="adm-header-right">
+      <span class="adm-tag">linex@gmail.com</span>
+      <button class="adm-logout" onclick="adminLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="adm-tabs">
+    <button class="adm-tab active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
+    <button class="adm-tab" onclick="showTab('ads',this)">📺 Unity Ads</button>
+    <button class="adm-tab" onclick="showTab('redeem-opts',this)">🎁 Redeem Options</button>
+    <button class="adm-tab" onclick="showTab('requests',this)">📋 Requests</button>
+    <button class="adm-tab" onclick="showTab('users',this)">👥 Users</button>
+    <button class="adm-tab" onclick="showTab('settings',this)">⚙️ Settings</button>
+  </div>
+
+  <div class="adm-content">
+
+    <!-- DASHBOARD -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="adm-stats">
+        <div class="adm-stat"><div class="sv" id="ds-users">0</div><div class="sl">Users</div></div>
+        <div class="adm-stat"><div class="sv" id="ds-coins">0</div><div class="sl">Coins Out</div></div>
+        <div class="adm-stat"><div class="sv" id="ds-ads">0</div><div class="sl">Ads Today</div></div>
+        <div class="adm-stat"><div class="sv" id="ds-pending">0</div><div class="sl">Pending</div></div>
+      </div>
+      <div class="adm-card">
+        <div class="adm-card-title">RECENT REQUESTS</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Reward</th><th>Coins</th><th>Status</th></tr></thead>
+            <tbody id="ds-reqs"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- UNITY ADS -->
+    <div class="tab-panel" id="tab-ads">
+      <div class="adm-card">
+        <div class="adm-card-title">🎮 UNITY ADS CONFIGURATION</div>
+        <div class="f-row two">
+          <div class="f-field"><label>Unity Game ID</label><input type="text" id="ua-gameid" placeholder="e.g. 1234567"></div>
+          <div class="f-field"><label>Test Mode</label>
+            <select id="ua-testmode">
+              <option value="false">Production (Real Ads)</option>
+              <option value="true" selected>Test Mode (Development)</option>
+            </select>
+          </div>
+        </div>
+        <div class="f-row two">
+          <div class="f-field"><label>🔴 Interstitial Placement ID</label><input type="text" id="ua-inter-id" placeholder="Interstitial_Android"></div>
+          <div class="f-field"><label>🔵 Rewarded Placement ID</label><input type="text" id="ua-reward-id" placeholder="Rewarded_Android"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-black" onclick="saveAds()">💾 Save Unity Config</button>
+        </div>
+      </div>
+
+      <div class="adm-card">
+        <div class="adm-card-title">🪙 COINS PER AD</div>
+        <div class="f-row two">
+          <div class="f-field"><label>🔴 Interstitial Coins</label><input type="number" id="ua-inter-coins" placeholder="5" min="1"></div>
+          <div class="f-field"><label>🔵 Rewarded Coins</label><input type="number" id="ua-reward-coins" placeholder="10" min="1"></div>
+        </div>
+        <div class="f-row two">
+          <div class="f-field"><label>Daily Ad Limit Per User</label><input type="number" id="ua-daily" placeholder="20" min="1"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-black" onclick="saveAds()">💾 Save Coin Settings</button>
+        </div>
+      </div>
+
+      <div class="adm-card">
+        <div class="adm-card-title">📖 HOW TO SET UP UNITY ADS</div>
+        <div style="font-size:.85rem;line-height:1.7;color:var(--muted);">
+          <p style="margin-bottom:.6rem;">1. <strong style="color:var(--black)">unity.com</strong> par account banao → Dashboard open karo</p>
+          <p style="margin-bottom:.6rem;">2. <strong style="color:var(--black)">New Project</strong> create karo → Platform: Android select karo</p>
+          <p style="margin-bottom:.6rem;">3. <strong style="color:var(--black)">Game ID</strong> copy karo (Settings → Project Info me milega)</p>
+          <p style="margin-bottom:.6rem;">4. <strong style="color:var(--black)">Monetization → Placements</strong> me jao → Interstitial + Rewarded IDs copy karo</p>
+          <p style="margin-bottom:.6rem;">5. Upar wale fields me paste karo → Save karo</p>
+          <p style="color:#aaa;font-size:.78rem;">⚠️ APK banane ke baad hi real Unity Ads kaam karengi. Browser me simulation mode chalta hai.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- REDEEM OPTIONS -->
+    <div class="tab-panel" id="tab-redeem-opts">
+      <div class="adm-card">
+        <div class="adm-card-title">➕ ADD / EDIT OPTION</div>
+        <input type="hidden" id="oe-id">
+        <div class="f-row two">
+          <div class="f-field"><label>Title</label><input type="text" id="oe-title" placeholder="e.g. UPI ₹10"></div>
+          <div class="f-field"><label>Coins Required</label><input type="number" id="oe-coins" placeholder="1000" min="1"></div>
+        </div>
+        <div class="f-row two">
+          <div class="f-field">
+            <label>Type</label>
+            <select id="oe-type" onchange="checkCodeType()">
+              <option value="upi">UPI Transfer</option>
+              <option value="paytm">Paytm</option>
+              <option value="code">Gift Code / File</option>
+              <option value="gift">Gift Card</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="f-field"><label>Description</label><input type="text" id="oe-desc" placeholder="Short description..."></div>
+        </div>
+        <div id="oe-codes-row" style="display:none" class="f-row">
+          <div class="f-field"><label>Codes to deliver (one per line)</label><textarea id="oe-codes" placeholder="CODE1&#10;CODE2&#10;CODE3"></textarea></div>
+        </div>
+        <div class="f-toggle">
+          <span class="f-toggle-lbl">Active (visible to users)</span>
+          <label class="toggle"><input type="checkbox" id="oe-active" checked><span class="toggle-sl"></span></label>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-black" onclick="saveOpt()">Save Option</button>
+          <button class="btn btn-outline" onclick="clearOpt()">Clear</button>
+        </div>
+      </div>
+
+      <div class="adm-card">
+        <div class="adm-card-title">EXISTING OPTIONS</div>
+        <div class="opt-list" id="opt-list"><div class="empty">No options yet.</div></div>
+      </div>
+    </div>
+
+    <!-- REQUESTS -->
+    <div class="tab-panel" id="tab-requests">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1.5px;">REDEEM REQUESTS</span>
+        <select id="req-filter" onchange="renderReqs()" style="border:1.5px solid var(--border);border-radius:8px;padding:.4rem .7rem;font-size:.82rem;outline:none;">
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Reward</th><th>Coins</th><th>Details</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
+          <tbody id="reqs-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="tab-panel" id="tab-users">
+      <div style="margin-bottom:.8rem;">
+        <input type="text" id="user-q" oninput="renderUsers()" placeholder="🔍 Search by name or email..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.65rem .9rem;font-size:.88rem;outline:none;">
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Coins</th><th>Earned</th><th>Actions</th></tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="adm-card">
+        <div class="adm-card-title">APP SETTINGS</div>
+        <div class="f-row two">
+          <div class="f-field"><label>App Name</label><input type="text" id="cfg-name" placeholder="EarnCoins"></div>
+          <div class="f-field"><label>Min Coins to Redeem</label><input type="number" id="cfg-min" placeholder="100" min="1"></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-black" onclick="saveSettings()">💾 Save</button></div>
+      </div>
+
+      <div class="adm-card">
+        <div class="adm-card-title">CHANGE ADMIN PASSWORD</div>
+        <div class="f-row two">
+          <div class="f-field"><label>New Password</label><input type="password" id="np1" placeholder="Min 6 characters"></div>
+          <div class="f-field"><label>Confirm Password</label><input type="password" id="np2" placeholder="Repeat"></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-outline" onclick="changePass()">Update Password</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="adm-confirm" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;align-items:center;justify-content:center;padding:2rem;">
+  <div style="background:#fff;border:1.5px solid #e0e0e0;border-radius:16px;padding:1.6rem 1.4rem;width:100%;max-width:300px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.15);">
+    <div id="adm-cf-icon" style="font-size:2rem;margin-bottom:.6rem;">⚠️</div>
+    <div id="adm-cf-msg" style="font-size:.92rem;font-weight:500;margin-bottom:1.2rem;color:#111;line-height:1.4;"></div>
+    <div style="display:flex;gap:.6rem;">
+      <button onclick="closeConfirm()" style="flex:1;padding:.72rem;border:1.5px solid #e0e0e0;border-radius:8px;background:none;color:#666;font-family:inherit;font-size:.85rem;cursor:pointer;">Cancel</button>
+      <button id="adm-cf-btn" onclick="doConfirm()" style="flex:1;padding:.72rem;border:none;border-radius:8px;background:#111;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:1.5px;cursor:pointer;" class="c-ok-btn">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT MODAL -->
+<div id="adm-input" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;align-items:center;justify-content:center;padding:2rem;">
+  <div style="background:#fff;border:1.5px solid #e0e0e0;border-radius:16px;padding:1.6rem 1.4rem;width:100%;max-width:300px;box-shadow:0 10px 40px rgba(0,0,0,.15);">
+    <div id="adm-ib-title" style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1.5px;margin-bottom:.25rem;color:#111;"></div>
+    <div id="adm-ib-sub" style="font-size:.75rem;color:#888;margin-bottom:.8rem;"></div>
+    <input type="number" id="adm-ib-val" style="width:100%;border:1.5px solid #e0e0e0;border-radius:8px;padding:.7rem .9rem;font-size:.92rem;font-family:inherit;outline:none;margin-bottom:1rem;color:#111;" placeholder="Enter value...">
+    <div style="display:flex;gap:.6rem;">
+      <button onclick="closeInput()" style="flex:1;padding:.72rem;border:1.5px solid #e0e0e0;border-radius:8px;background:none;color:#666;font-family:inherit;font-size:.85rem;cursor:pointer;">Cancel</button>
+      <button onclick="doInput()" style="flex:1;padding:.72rem;border:none;border-radius:8px;background:#111;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:1.5px;cursor:pointer;">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  SHARED STORAGE (same as app.html)
+// ══════════════════════════════════════════════
+const DB = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+  USERS:'ec_users', CUR:'ec_cur', SETTINGS:'ec_settings',
+  REDEEM_OPTS:'ec_redeem_opts', REDEEM_REQS:'ec_redeem_reqs',
+};
+const DEFAULT_SETTINGS = { appName:'EarnCoins', unityGameId:'', unityTestMode:true, interstitialPlacementId:'Interstitial_Android', rewardedPlacementId:'Rewarded_Android', interstitialCoins:5, rewardedCoins:10, dailyLimit:20, minRedeem:100 };
+function getSettings(){ return {...DEFAULT_SETTINGS,...(DB.get(DB.SETTINGS)||{})}; }
+function getUsers(){ return DB.get(DB.USERS)||{}; }
+function saveUsers(u){ DB.set(DB.USERS,u); }
+function getRedeemOpts(){ return DB.get(DB.REDEEM_OPTS)||[]; }
+function saveRedeemOpts(o){ DB.set(DB.REDEEM_OPTS,o); }
+function getRedeemReqs(){ return DB.get(DB.REDEEM_REQS)||[]; }
+function getAdLog(){ return DB.get('ec_adlog')||{}; }
+function timeAgo(iso){ const d=Date.now()-new Date(iso).getTime(),m=Math.floor(d/60000); if(m<1)return'now'; if(m<60)return m+'m'; if(m<1440)return Math.floor(m/60)+'h'; return Math.floor(m/1440)+'d'; }
+
+// Seed admin
+(function(){ const u=getUsers(); if(!u['linex@gmail.com']){ u['linex@gmail.com']={email:'linex@gmail.com',name:'Admin',password:'linex123',coins:0,totalEarned:0,isAdmin:true,createdAt:new Date().toISOString()}; saveUsers(u); } })();
+
+// ── AUTH ──
+function adminLogin(){
+  const email=document.getElementById('a-email').value.trim().toLowerCase();
+  const pass=document.getElementById('a-pass').value;
+  const err=document.getElementById('a-err');
+  err.textContent='';
+  const users=getUsers();
+  const user=users[email];
+  if(!user||!user.isAdmin){ err.textContent='Admin account not found.'; return; }
+  if(user.password!==pass){ err.textContent='Wrong password.'; return; }
+  DB.set(DB.CUR,email);
+  document.getElementById('admin-auth').style.display='none';
+  document.getElementById('admin-panel').classList.add('show');
+  loadAll();
+}
+function adminLogout(){ showConfirm('Admin se logout karna chahte ho?','LOGOUT',()=>{ localStorage.removeItem(DB.CUR); location.reload(); },true,'🚪'); }
+
+// ── TABS ──
+function showTab(id, btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.adm-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='dashboard') loadDashboard();
+  if(id==='users') renderUsers();
+  if(id==='requests') renderReqs();
+  if(id==='redeem-opts') renderOpts();
+  if(id==='ads') loadAdsForm();
+  if(id==='settings') loadSettingsForm();
+}
+
+function loadAll(){
+  loadDashboard();
+  loadAdsForm();
+  loadSettingsForm();
+}
+
+// ── DASHBOARD ──
+function loadDashboard(){
+  const users=getUsers();
+  const reqs=getRedeemReqs();
+  const adLog=getAdLog();
+  const today=new Date().toDateString();
+  let totalCoins=0, todayAds=0;
+  Object.values(users).forEach(u=>{ totalCoins+=(u.coins||0); });
+  Object.values(adLog).forEach(ul=>{ todayAds+=(ul[today]||0); });
+  document.getElementById('ds-users').textContent=Object.keys(users).length;
+  document.getElementById('ds-coins').textContent=totalCoins.toLocaleString();
+  document.getElementById('ds-ads').textContent=todayAds;
+  document.getElementById('ds-pending').textContent=reqs.filter(r=>r.status==='pending').length;
+  const tbody=document.getElementById('ds-reqs');
+  const recent=reqs.slice(0,6);
+  if(!recent.length){ tbody.innerHTML='<tr><td colspan="4" class="empty">No requests yet</td></tr>'; return; }
+  tbody.innerHTML=recent.map(r=>`<tr><td><strong>${r.name}</strong></td><td>${r.optionTitle}</td><td>${r.coins.toLocaleString()}</td><td><span class="badge ${r.status}">${r.status}</span></td></tr>`).join('');
+}
+
+// ── ADS ──
+function loadAdsForm(){
+  const s=getSettings();
+  document.getElementById('ua-gameid').value=s.unityGameId||'';
+  document.getElementById('ua-testmode').value=s.unityTestMode?'true':'false';
+  document.getElementById('ua-inter-id').value=s.interstitialPlacementId||'Interstitial_Android';
+  document.getElementById('ua-reward-id').value=s.rewardedPlacementId||'Rewarded_Android';
+  document.getElementById('ua-inter-coins').value=s.interstitialCoins||5;
+  document.getElementById('ua-reward-coins').value=s.rewardedCoins||10;
+  document.getElementById('ua-daily').value=s.dailyLimit||20;
+}
+function saveAds(){
+  const s=getSettings();
+  s.unityGameId=document.getElementById('ua-gameid').value.trim();
+  s.unityTestMode=document.getElementById('ua-testmode').value==='true';
+  s.interstitialPlacementId=document.getElementById('ua-inter-id').value.trim()||'Interstitial_Android';
+  s.rewardedPlacementId=document.getElementById('ua-reward-id').value.trim()||'Rewarded_Android';
+  s.interstitialCoins=parseInt(document.getElementById('ua-inter-coins').value)||5;
+  s.rewardedCoins=parseInt(document.getElementById('ua-reward-coins').value)||10;
+  s.dailyLimit=parseInt(document.getElementById('ua-daily').value)||20;
+  DB.set(DB.SETTINGS,s);
+  showToast('✅ Saved!');
+}
+
+// ── REDEEM OPTIONS ──
+function checkCodeType(){
+  const t=document.getElementById('oe-type').value;
+  document.getElementById('oe-codes-row').style.display=t==='code'?'grid':'none';
+}
+function renderOpts(){
+  const opts=getRedeemOpts();
+  const list=document.getElementById('opt-list');
+  if(!opts.length){ list.innerHTML='<div class="empty">No options yet.</div>'; return; }
+  list.innerHTML=opts.map(o=>`
+    <div class="opt-card">
+      <div class="opt-info">
+        <div class="ot">${o.title} — ${o.coins.toLocaleString()} coins</div>
+        <div class="om">${o.description||''} · ${o.type} · <span style="color:${o.active?'var(--green)':'var(--red)'}">${o.active?'Active':'Inactive'}</span></div>
+      </div>
+      <div class="opt-actions">
+        <button class="btn btn-outline btn-sm" onclick="editOpt(${o.id})">Edit</button>
+        <button class="btn btn-red btn-sm" onclick="deleteOpt(${o.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+function saveOpt(){
+  const id=document.getElementById('oe-id').value;
+  const title=document.getElementById('oe-title').value.trim();
+  const coins=parseInt(document.getElementById('oe-coins').value);
+  const type=document.getElementById('oe-type').value;
+  const desc=document.getElementById('oe-desc').value.trim();
+  const active=document.getElementById('oe-active').checked;
+  const codes=document.getElementById('oe-codes').value.trim().split('\n').filter(c=>c.trim());
+  if(!title||!coins){ showToast('Title aur coins daalo'); return; }
+  const opts=getRedeemOpts();
+  if(id){
+    const idx=opts.findIndex(o=>o.id===parseInt(id));
+    if(idx!==-1) opts[idx]={...opts[idx],title,coins,type,description:desc,active,codes};
+  } else {
+    opts.push({id:Date.now(),title,coins,type,description:desc,active,codes});
+  }
+  saveRedeemOpts(opts);
+  clearOpt();
+  renderOpts();
+  showToast('✅ Option saved!');
+}
+function editOpt(id){
+  const o=getRedeemOpts().find(x=>x.id===id);
+  if(!o) return;
+  document.getElementById('oe-id').value=o.id;
+  document.getElementById('oe-title').value=o.title;
+  document.getElementById('oe-coins').value=o.coins;
+  document.getElementById('oe-type').value=o.type;
+  document.getElementById('oe-desc').value=o.description||'';
+  document.getElementById('oe-active').checked=o.active;
+  document.getElementById('oe-codes').value=(o.codes||[]).join('\n');
+  checkCodeType();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function deleteOpt(id){ showConfirm('Ye option delete karna chahte ho?','DELETE',()=>{ saveRedeemOpts(getRedeemOpts().filter(o=>o.id!==id)); renderOpts(); showToast('Deleted'); },true,'🗑️'); }
+function clearOpt(){
+  document.getElementById('oe-id').value='';
+  document.getElementById('oe-title').value='';
+  document.getElementById('oe-coins').value='';
+  document.getElementById('oe-type').value='upi';
+  document.getElementById('oe-desc').value='';
+  document.getElementById('oe-active').checked=true;
+  document.getElementById('oe-codes').value='';
+  document.getElementById('oe-codes-row').style.display='none';
+}
+
+// ── REQUESTS ──
+function renderReqs(){
+  const filter=document.getElementById('req-filter').value;
+  let reqs=getRedeemReqs();
+  if(filter!=='all') reqs=reqs.filter(r=>r.status===filter);
+  const tbody=document.getElementById('reqs-tbody');
+  if(!reqs.length){ tbody.innerHTML='<tr><td colspan="7" class="empty">No requests</td></tr>'; return; }
+  tbody.innerHTML=reqs.map(r=>`
+    <tr>
+      <td><strong>${r.name}</strong><br><span style="font-size:.72rem;color:var(--muted)">${r.email}</span></td>
+      <td>${r.optionTitle}</td>
+      <td>${r.coins.toLocaleString()}</td>
+      <td style="max-width:110px;word-break:break-all;font-size:.8rem">${r.details}</td>
+      <td><span class="badge ${r.status}">${r.status}</span></td>
+      <td style="font-size:.75rem;color:var(--muted)">${timeAgo(r.createdAt)}</td>
+      <td>
+        ${r.status==='pending'?`<div style="display:flex;gap:.3rem"><button class="btn btn-green btn-sm" onclick="approveReq(${r.id})">✅</button><button class="btn btn-red btn-sm" onclick="rejectReq(${r.id})">❌</button></div>`:'—'}
+      </td>
+    </tr>
+  `).join('');
+}
+function approveReq(id){
+  const reqs=getRedeemReqs();
+  const idx=reqs.findIndex(r=>r.id===id);
+  if(idx!==-1) reqs[idx].status='approved';
+  DB.set(DB.REDEEM_REQS,reqs);
+  showToast('✅ Approved'); renderReqs(); loadDashboard();
+}
+function rejectReq(id){
+  const reqs=getRedeemReqs();
+  const idx=reqs.findIndex(r=>r.id===id);
+  if(idx!==-1){
+    // Refund coins
+    const r=reqs[idx];
+    const users=getUsers();
+    if(users[r.email]){ users[r.email].coins=(users[r.email].coins||0)+r.coins; saveUsers(users); }
+    reqs[idx].status='rejected';
+  }
+  DB.set(DB.REDEEM_REQS,reqs);
+  showToast('Rejected · coins refunded'); renderReqs(); loadDashboard();
+}
+
+// ── USERS ──
+function renderUsers(){
+  const q=(document.getElementById('user-q')?.value||'').toLowerCase();
+  const users=Object.values(getUsers()).filter(u=>!q||u.name.toLowerCase().includes(q)||u.email.toLowerCase().includes(q));
+  const tbody=document.getElementById('users-tbody');
+  if(!users.length){ tbody.innerHTML='<tr><td colspan="5" class="empty">No users</td></tr>'; return; }
+  tbody.innerHTML=users.map(u=>`
+    <tr>
+      <td><strong>${u.name}</strong>${u.isAdmin?' 👑':''}</td>
+      <td style="font-size:.8rem;color:var(--muted)">${u.email}</td>
+      <td>${(u.coins||0).toLocaleString()}</td>
+      <td>${(u.totalEarned||0).toLocaleString()}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="editCoins('${u.email}','${u.name}',${u.coins||0})">Edit Coins</button></td>
+    </tr>
+  `).join('');
+}
+function editCoins(email,name,cur){
+  showInput('COINS EDIT', name + ' — Current: ' + cur, cur, (val) => {
+    const n=parseInt(val);
+    if(isNaN(n)||n<0){ showToast('Invalid amount'); return; }
+    const u=getUsers(); u[email].coins=n; saveUsers(u);
+    showToast('✅ Coins updated!'); renderUsers();
+  });
+}
+
+// ── SETTINGS ──
+function loadSettingsForm(){
+  const s=getSettings();
+  document.getElementById('cfg-name').value=s.appName||'EarnCoins';
+  document.getElementById('cfg-min').value=s.minRedeem||100;
+}
+function saveSettings(){
+  const s=getSettings();
+  s.appName=document.getElementById('cfg-name').value.trim()||'EarnCoins';
+  s.minRedeem=parseInt(document.getElementById('cfg-min').value)||100;
+  DB.set(DB.SETTINGS,s);
+  showToast('✅ Settings saved!');
+}
+function changePass(){
+  const n1=document.getElementById('np1').value;
+  const n2=document.getElementById('np2').value;
+  if(n1.length<6){ showToast('Min 6 characters'); return; }
+  if(n1!==n2){ showToast('Passwords do not match'); return; }
+  const u=getUsers(); u['linex@gmail.com'].password=n1; saveUsers(u);
+  document.getElementById('np1').value=''; document.getElementById('np2').value='';
+  showToast('✅ Password updated!');
+}
+
+// ── CUSTOM MODALS ──
+let _cfCb=null;
+function showConfirm(msg,btnLabel,cb,isDanger,icon){
+  icon=icon||'⚠️';
+  document.getElementById('adm-cf-icon').textContent=icon;
+  document.getElementById('adm-cf-msg').textContent=msg;
+  document.getElementById('adm-cf-btn').textContent=btnLabel;
+  document.getElementById('adm-cf-btn').style.background=isDanger?'#e02020':'#111';
+  _cfCb=cb;
+  document.getElementById('adm-confirm').style.display='flex';
+}
+function doConfirm(){ closeConfirm(); if(_cfCb)_cfCb(); }
+function closeConfirm(){ document.getElementById('adm-confirm').style.display='none'; _cfCb=null; }
+
+let _ibCb=null;
+function showInput(title,sub,def,cb){
+  document.getElementById('adm-ib-title').textContent=title;
+  document.getElementById('adm-ib-sub').textContent=sub;
+  document.getElementById('adm-ib-val').value=def||'';
+  _ibCb=cb;
+  document.getElementById('adm-input').style.display='flex';
+  setTimeout(()=>document.getElementById('adm-ib-val').focus(),150);
+}
+function doInput(){ var v=document.getElementById('adm-ib-val').value; closeInput(); if(_ibCb)_ibCb(v); }
+function closeInput(){ document.getElementById('adm-input').style.display='none'; _ibCb=null; }
+
+// ── TOAST ──
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ── BOOT ──
+window.addEventListener('load',()=>{
+  const cur=DB.get(DB.CUR);
+  if(cur){ const u=getUsers()[cur]; if(u&&u.isAdmin){ document.getElementById('admin-auth').style.display='none'; document.getElementById('admin-panel').classList.add('show'); loadAll(); } }
+});
+</script>
+</body>
+</html>

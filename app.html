@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EarnCoins</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --black2: #141414;
+    --black3: #1e1e1e;
+    --white: #ffffff;
+    --white2: #f0f0f0;
+    --gray: #888888;
+    --gray2: #333333;
+    --border: #2a2a2a;
+    --red: #e02020;
+    --red-dark: #b01818;
+    --blue: #1a6ef5;
+    --blue-dark: #1255cc;
+    --green: #00c97a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; overflow:hidden; }
+  body {
+    font-family:'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display:none; flex:1; flex-direction:column; overflow:hidden; }
+  .screen.active { display:flex; }
+
+  /* ══════════════════════════════
+     AUTH SCREEN
+  ══════════════════════════════ */
+  #auth-screen {
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1.5rem;
+    background: var(--black);
+    overflow-y: auto;
+  }
+  .auth-wrap { width:100%; max-width:360px; }
+
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  .auth-logo .logo-ring {
+    width: 72px; height: 72px;
+    border: 3px solid var(--white);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.8rem;
+    position: relative;
+  }
+  .auth-logo .logo-ring::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px solid var(--gray2);
+  }
+  .auth-logo h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+  .auth-logo p { color: var(--gray); font-size: .82rem; margin-top: .2rem; }
+
+  /* Tabs */
+  .auth-tabs {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.8rem;
+  }
+  .auth-tab {
+    flex: 1; padding: .65rem;
+    text-align: center;
+    cursor: pointer;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--gray);
+    background: var(--black2);
+    border: none;
+    font-family: inherit;
+    transition: .2s;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .auth-tab.active { background: var(--white); color: var(--black); }
+
+  /* Fields */
+  .auth-form { display: flex; flex-direction: column; gap: 1rem; }
+  .field-group label {
+    display: block;
+    font-size: .7rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: .4rem;
+  }
+  .field-group input {
+    width: 100%;
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .8rem 1rem;
+    color: var(--white);
+    font-size: .92rem;
+    font-family: inherit;
+    outline: none;
+    transition: .2s;
+  }
+  .field-group input:focus { border-color: var(--white); }
+  .field-group input::placeholder { color: var(--gray2); }
+
+  .auth-btn {
+    width: 100%;
+    padding: .9rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--black);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: .2s;
+    margin-top: .4rem;
+  }
+  .auth-btn:hover { background: var(--white2); }
+  .auth-btn:active { transform: scale(.98); }
+
+  .auth-error {
+    color: var(--red);
+    font-size: .78rem;
+    text-align: center;
+    min-height: 1rem;
+    margin-top: -.3rem;
+  }
+
+  /* ══════════════════════════════
+     MAIN APP (HOME + PROFILE)
+  ══════════════════════════════ */
+  #app-screen { background: var(--black); }
+
+  /* Pages inside app */
+  .page { display:none; flex:1; flex-direction:column; overflow-y:auto; }
+  .page.active { display:flex; }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    padding: 1.2rem 1.4rem .8rem;
+    background: var(--black);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .top-bar-row { display:flex; align-items:center; justify-content:space-between; }
+  .app-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: var(--white);
+  }
+  .coin-display {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--black3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: .4rem .9rem;
+  }
+  .coin-display .coin-icon { font-size: 1rem; }
+  .coin-display .coin-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--white);
+  }
+
+  /* ── HOME PAGE ── */
+  #page-home { padding: 0; }
+
+  .user-card {
+    margin: 1.2rem 1.4rem;
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .user-avatar {
+    width: 52px; height: 52px;
+    background: var(--white);
+    color: var(--black);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .user-info .user-name { font-weight: 600; font-size: 1rem; }
+  .user-info .user-email { color: var(--gray); font-size: .78rem; margin-top: .15rem; }
+
+  .balance-section {
+    margin: 0 1.4rem 1.4rem;
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem;
+    text-align: center;
+  }
+  .balance-label {
+    font-size: .7rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: .4rem;
+  }
+  .balance-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--white);
+    letter-spacing: 2px;
+  }
+  .balance-sub { color: var(--gray); font-size: .75rem; margin-top: .3rem; }
+
+  /* Ad Buttons */
+  .ads-section { padding: 0 1.4rem 1.4rem; display: flex; flex-direction: column; gap: .9rem; }
+  .ads-label {
+    font-size: .7rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: -.2rem;
+  }
+
+  .ad-btn {
+    width: 100%;
+    padding: 1.1rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: .18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .ad-btn:active { transform: scale(.97); }
+  .ad-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.08);
+    opacity: 0;
+    transition: .2s;
+  }
+  .ad-btn:hover::after { opacity: 1; }
+
+  .ad-btn.interstitial {
+    background: var(--red);
+    color: var(--white);
+    box-shadow: 0 4px 20px rgba(224,32,32,.3);
+  }
+  .ad-btn.interstitial:hover { box-shadow: 0 6px 28px rgba(224,32,32,.45); }
+
+  .ad-btn.rewarded {
+    background: var(--blue);
+    color: var(--white);
+    box-shadow: 0 4px 20px rgba(26,110,245,.3);
+  }
+  .ad-btn.rewarded:hover { box-shadow: 0 6px 28px rgba(26,110,245,.45); }
+
+  .ad-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .ad-btn .btn-left { display: flex; flex-direction: column; align-items: flex-start; gap: .1rem; }
+  .ad-btn .btn-type { font-size: 1.3rem; }
+  .ad-btn .btn-sub { font-family: 'DM Sans', sans-serif; font-size: .72rem; font-weight: 400; opacity: .75; letter-spacing: 0; }
+  .ad-btn .btn-coins {
+    background: rgba(0,0,0,.25);
+    border-radius: 999px;
+    padding: .3rem .75rem;
+    font-size: .88rem;
+    display: flex; align-items: center; gap: .3rem;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .8rem;
+    padding: 0 1.4rem 1.4rem;
+  }
+  .stat-box {
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .9rem 1rem;
+    text-align: center;
+  }
+  .stat-box .sv {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+  }
+  .stat-box .sl { font-size: .7rem; color: var(--gray); margin-top: .1rem; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* ── PROFILE PAGE ── */
+  #page-profile { padding: 0; }
+
+  .profile-header {
+    margin: 1.2rem 1.4rem;
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .profile-avatar {
+    width: 68px; height: 68px;
+    background: var(--white);
+    color: var(--black);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    margin: 0 auto .9rem;
+  }
+  .profile-name { font-weight: 700; font-size: 1.1rem; }
+  .profile-email { color: var(--gray); font-size: .8rem; margin-top: .2rem; }
+
+  .section-label {
+    font-size: .68rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 1.4rem;
+    margin-bottom: .6rem;
+  }
+
+  /* Redeem section */
+  .redeem-section { padding: 0 1.4rem 1rem; }
+  .redeem-balance {
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .redeem-balance .rb-label { font-size: .78rem; color: var(--gray); }
+  .redeem-balance .rb-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+  .redeem-balance .rb-sub { font-size: .7rem; color: var(--gray); }
+
+  /* Redeem options (from admin) */
+  .redeem-opts { display: flex; flex-direction: column; gap: .7rem; margin-bottom: 1rem; }
+  .redeem-opt {
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: .18s;
+  }
+  .redeem-opt:hover { border-color: var(--white); }
+  .redeem-opt.disabled { opacity: .4; cursor: not-allowed; }
+  .redeem-opt .ro-left {}
+  .redeem-opt .ro-title { font-weight: 600; font-size: .92rem; }
+  .redeem-opt .ro-desc { font-size: .75rem; color: var(--gray); margin-top: .1rem; }
+  .redeem-opt .ro-coins {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--white);
+    white-space: nowrap;
+  }
+  .redeem-opt .ro-coins span { font-family: 'DM Sans', sans-serif; font-size: .7rem; color: var(--gray); font-weight: 400; }
+
+  .no-opts { text-align: center; color: var(--gray); font-size: .85rem; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
+
+  /* Profile menu */
+  .profile-menu { padding: 0 1.4rem 1.4rem; display: flex; flex-direction: column; gap: .5rem; }
+  .menu-item {
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .9rem 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: .9rem;
+    transition: .15s;
+  }
+  .menu-item:hover { border-color: var(--gray); }
+  .menu-item.danger { color: var(--red); }
+  .menu-item .mi-r { color: var(--gray); }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    display: flex;
+    border-top: 1px solid var(--border);
+    background: var(--black);
+    flex-shrink: 0;
+  }
+  .nav-btn {
+    flex: 1;
+    padding: .75rem .5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: .15s;
+    border-top: 2px solid transparent;
+  }
+  .nav-btn .nb-icon { font-size: 1.2rem; }
+  .nav-btn .nb-label { font-size: .65rem; color: var(--gray); text-transform: uppercase; letter-spacing: .5px; }
+  .nav-btn.active { border-top-color: var(--white); }
+  .nav-btn.active .nb-label { color: var(--white); }
+
+  /* ══════════════════════════════
+     AD OVERLAY (Simulation)
+  ══════════════════════════════ */
+  #ad-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: #000;
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #ad-overlay.show { display: flex; }
+  .ad-ov-inner { width: 100%; max-width: 420px; padding: 1.5rem; text-align: center; }
+  .ad-type-badge {
+    display: inline-block;
+    padding: .25rem .7rem;
+    border-radius: 4px;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .ad-type-badge.inter { background: var(--red); }
+  .ad-type-badge.reward { background: var(--blue); }
+  .ad-placeholder-box {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 12px;
+    aspect-ratio: 16/9;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: .6rem;
+    margin-bottom: 1.5rem;
+    font-size: .85rem;
+    color: #555;
+  }
+  .ad-placeholder-box .ad-big { font-size: 2.5rem; }
+  .ad-timer-bar { background: #222; border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 1rem; }
+  .ad-timer-fill { height: 100%; width: 0%; transition: width 1s linear; }
+  .ad-timer-fill.inter { background: var(--red); }
+  .ad-timer-fill.reward { background: var(--blue); }
+  .ad-info { display: flex; justify-content: space-between; align-items: center; }
+  .ad-timer-txt { font-size: .8rem; color: #666; }
+  #ad-skip-btn {
+    display: none;
+    background: #222;
+    border: 1px solid #444;
+    color: #fff;
+    padding: .4rem .9rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: .8rem;
+    font-family: inherit;
+  }
+
+  /* ══════════════════════════════
+     REDEEM MODAL
+  ══════════════════════════════ */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 900;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: var(--black2);
+    border: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+    width: 100%;
+    max-width: 480px;
+    padding: 1.5rem 1.4rem 2rem;
+    animation: slideUp .3s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; margin-bottom: 1.2rem; }
+  .modal-field label { display: block; font-size: .7rem; color: var(--gray); text-transform: uppercase; letter-spacing: .8px; margin-bottom: .4rem; }
+  .modal-field input {
+    width: 100%;
+    background: var(--black3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    color: var(--white);
+    font-size: .92rem;
+    font-family: inherit;
+    outline: none;
+    margin-bottom: 1rem;
+  }
+  .modal-field input:focus { border-color: var(--white); }
+  .modal-actions { display: flex; gap: .7rem; }
+  .modal-submit {
+    flex: 1; padding: .85rem;
+    background: var(--white);
+    color: var(--black);
+    border: none; border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem; letter-spacing: 2px;
+    cursor: pointer; transition: .15s;
+  }
+  .modal-submit:hover { background: var(--white2); }
+  .modal-cancel {
+    padding: .85rem 1.2rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--gray);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .88rem;
+  }
+
+  /* Confirm Modal */
+  .confirm-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.75); z-index:3000;
+    align-items:center; justify-content:center; padding:2rem;
+  }
+  .confirm-overlay.show { display:flex; }
+  .confirm-box {
+    background:var(--black2); border:1px solid var(--border);
+    border-radius:16px; padding:1.6rem 1.4rem; width:100%; max-width:300px;
+    text-align:center; animation:popIn .2s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes popIn { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
+  .confirm-box .cf-icon { font-size:2rem; margin-bottom:.7rem; display:block; }
+  .confirm-box .cf-msg { font-size:.95rem; font-weight:500; margin-bottom:1.3rem; line-height:1.4; }
+  .confirm-btns { display:flex; gap:.7rem; }
+  .cf-cancel {
+    flex:1; padding:.75rem; border:1.5px solid var(--border);
+    border-radius:8px; background:none; color:var(--gray);
+    font-family:inherit; font-size:.88rem; cursor:pointer;
+  }
+  .cf-confirm {
+    flex:1; padding:.75rem; border:none;
+    border-radius:8px; background:var(--white); color:var(--black);
+    font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:1.5px; cursor:pointer;
+  }
+  .cf-confirm.red { background:var(--red); color:var(--white); }
+
+  /* Input Modal */
+  .input-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.75); z-index:3000;
+    align-items:center; justify-content:center; padding:2rem;
+  }
+  .input-overlay.show { display:flex; }
+  .input-box {
+    background:var(--black2); border:1px solid var(--border);
+    border-radius:16px; padding:1.6rem 1.4rem; width:100%; max-width:300px;
+    animation:popIn .2s cubic-bezier(.16,1,.3,1);
+  }
+  .input-box .ib-title { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:1.5px; margin-bottom:.4rem; }
+  .input-box .ib-sub { font-size:.78rem; color:var(--gray); margin-bottom:.9rem; }
+  .input-box input {
+    width:100%; background:var(--black3); border:1.5px solid var(--border);
+    border-radius:8px; padding:.75rem .9rem; color:var(--white);
+    font-size:.95rem; font-family:inherit; outline:none; margin-bottom:1rem;
+  }
+  .input-box input:focus { border-color:var(--white); }
+  .input-btns { display:flex; gap:.7rem; }
+  .ib-cancel {
+    flex:1; padding:.75rem; border:1.5px solid var(--border);
+    border-radius:8px; background:none; color:var(--gray);
+    font-family:inherit; font-size:.88rem; cursor:pointer;
+  }
+  .ib-ok {
+    flex:1; padding:.75rem; border:none;
+    border-radius:8px; background:var(--white); color:var(--black);
+    font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:1.5px; cursor:pointer;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 5rem; left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--white);
+    color: var(--black);
+    padding: .6rem 1.3rem;
+    border-radius: 999px;
+    font-size: .85rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: .3s;
+    z-index: 2000;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ AUTH SCREEN ══════════════════ -->
+<div class="screen active" id="auth-screen">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <div class="logo-ring">🪙</div>
+      <h1>EarnCoins</h1>
+      <p>Watch ads · Earn coins · Redeem</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- Login -->
+    <div id="login-form">
+      <div class="auth-form">
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="l-email" placeholder="you@email.com" autocomplete="email">
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div class="auth-error" id="l-err"></div>
+        <button class="auth-btn" onclick="doLogin()">LOGIN</button>
+      </div>
+    </div>
+
+    <!-- Signup -->
+    <div id="signup-form" style="display:none">
+      <div class="auth-form">
+        <div class="field-group">
+          <label>Full Name</label>
+          <input type="text" id="s-name" placeholder="Your name">
+        </div>
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="s-email" placeholder="you@email.com" autocomplete="email">
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input type="password" id="s-pass" placeholder="Min 6 characters">
+        </div>
+        <div class="auth-error" id="s-err"></div>
+        <button class="auth-btn" onclick="doSignup()">CREATE ACCOUNT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ APP SCREEN ══════════════════ -->
+<div class="screen" id="app-screen">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-bar-row">
+      <div class="app-title" id="app-title-bar">EARNCOINS</div>
+      <div class="coin-display">
+        <span class="coin-icon">🪙</span>
+        <span class="coin-val" id="top-coins">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME PAGE -->
+  <div class="page active" id="page-home">
+
+    <!-- User card -->
+    <div class="user-card">
+      <div class="user-avatar" id="home-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="home-name">—</div>
+        <div class="user-email" id="home-email">—</div>
+      </div>
+    </div>
+
+    <!-- Balance -->
+    <div class="balance-section">
+      <div class="balance-label">Coin Balance</div>
+      <div class="balance-amount" id="home-coins">0</div>
+      <div class="balance-sub" id="home-sub">Watch ads to earn</div>
+    </div>
+
+    <!-- Ad Buttons -->
+    <div class="ads-section">
+      <div class="ads-label">Watch Ads · Earn Coins</div>
+
+      <button class="ad-btn interstitial" id="btn-interstitial" onclick="watchAd('interstitial')">
+        <div class="btn-left">
+          <div class="btn-type">INTERSTITIAL</div>
+          <div class="btn-sub">Short full-screen ad</div>
+        </div>
+        <div class="btn-coins">🪙 <span id="inter-coins-lbl">+5</span></div>
+      </button>
+
+      <button class="ad-btn rewarded" id="btn-rewarded" onclick="watchAd('rewarded')">
+        <div class="btn-left">
+          <div class="btn-type">REWARDED</div>
+          <div class="btn-sub">Watch full to earn more</div>
+        </div>
+        <div class="btn-coins">🪙 <span id="reward-coins-lbl">+10</span></div>
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="sv" id="stat-today">0</div>
+        <div class="sl">Ads Today</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv" id="stat-total">0</div>
+        <div class="sl">Total Earned</div>
+      </div>
+    </div>
+
+  </div><!-- /page-home -->
+
+  <!-- PROFILE PAGE -->
+  <div class="page" id="page-profile">
+
+    <div class="profile-header">
+      <div class="profile-avatar" id="prof-avatar">?</div>
+      <div class="profile-name" id="prof-name">—</div>
+      <div class="profile-email" id="prof-email">—</div>
+    </div>
+
+    <!-- Redeem -->
+    <div class="section-label">Redeem Coins</div>
+    <div class="redeem-section">
+      <div class="redeem-balance">
+        <div>
+          <div class="rb-label">Available</div>
+          <div class="rb-sub" id="redeem-sub">to redeem</div>
+        </div>
+        <div class="rb-val" id="redeem-bal">0 🪙</div>
+      </div>
+      <div class="redeem-opts" id="redeem-opts-list">
+        <div class="no-opts">No redeem options yet.<br>Admin will add them soon.</div>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="section-label" style="margin-top:.5rem;">Account</div>
+    <div class="profile-menu">
+      <div class="menu-item danger" onclick="doLogout()">
+        <span>🚪 Logout</span>
+        <span class="mi-r">›</span>
+      </div>
+    </div>
+
+  </div><!-- /page-profile -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="switchPage('home')">
+      <span class="nb-icon">🏠</span>
+      <span class="nb-label">Home</span>
+    </button>
+    <button class="nav-btn" id="nav-profile" onclick="switchPage('profile')">
+      <span class="nb-icon">👤</span>
+      <span class="nb-label">Profile</span>
+    </button>
+  </div>
+
+</div><!-- /app-screen -->
+
+<!-- AD OVERLAY -->
+<div id="ad-overlay">
+  <div class="ad-ov-inner">
+    <div class="ad-type-badge" id="ad-badge">AD</div>
+    <div class="ad-placeholder-box">
+      <div class="ad-big">📺</div>
+      <div>Unity Ad plays here</div>
+      <div style="font-size:.72rem;color:#444">Production mein real ad aayega</div>
+    </div>
+    <div class="ad-timer-bar">
+      <div class="ad-timer-fill" id="ad-fill"></div>
+    </div>
+    <div class="ad-info">
+      <span class="ad-timer-txt" id="ad-timer-txt">0s</span>
+      <button id="ad-skip-btn" onclick="skipAd()">Skip ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- REDEEM MODAL -->
+<div class="modal-overlay" id="redeem-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">REDEEM</div>
+    <div class="modal-field">
+      <label id="modal-field-label">Your UPI ID</label>
+      <input type="text" id="modal-input" placeholder="Enter here...">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-submit" onclick="submitRedeem()">SUBMIT</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <span class="cf-icon" id="cf-icon">⚠️</span>
+    <div class="cf-msg" id="cf-msg">Are you sure?</div>
+    <div class="confirm-btns">
+      <button class="cf-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="cf-confirm" id="cf-btn" onclick="doConfirm()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT MODAL -->
+<div class="input-overlay" id="input-overlay">
+  <div class="input-box">
+    <div class="ib-title" id="ib-title">INPUT</div>
+    <div class="ib-sub" id="ib-sub"></div>
+    <input type="number" id="ib-input" placeholder="Enter value...">
+    <div class="input-btns">
+      <button class="ib-cancel" onclick="closeInput()">Cancel</button>
+      <button class="ib-ok" onclick="doInput()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════════
+const DB = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+  USERS: 'ec_users', CUR: 'ec_cur', SETTINGS: 'ec_settings',
+  REDEEM_OPTS: 'ec_redeem_opts', REDEEM_REQS: 'ec_redeem_reqs',
+};
+
+const DEFAULT_SETTINGS = {
+  appName: 'EarnCoins',
+  unityGameId: '',
+  interstitialPlacementId: 'Interstitial_Android',
+  rewardedPlacementId: 'Rewarded_Android',
+  interstitialCoins: 5,
+  rewardedCoins: 10,
+  dailyLimit: 20,
+  minRedeem: 100,
+};
+
+function getSettings() { return { ...DEFAULT_SETTINGS, ...(DB.get(DB.SETTINGS) || {}) }; }
+function getUsers() { return DB.get(DB.USERS) || {}; }
+function saveUsers(u) { DB.set(DB.USERS, u); }
+function getCurrent() {
+  const e = DB.get(DB.CUR);
+  if (!e) return null;
+  return getUsers()[e] || null;
+}
+function getRedeemOpts() { return DB.get(DB.REDEEM_OPTS) || []; }
+function getRedeemReqs() { return DB.get(DB.REDEEM_REQS) || []; }
+
+function addCoins(email, n) {
+  const u = getUsers();
+  u[email].coins = (u[email].coins||0) + n;
+  u[email].totalEarned = (u[email].totalEarned||0) + n;
+  saveUsers(u);
+}
+
+function getAdLog() { return DB.get('ec_adlog') || {}; }
+function getTodayAds(email) {
+  const log = getAdLog();
+  const today = new Date().toDateString();
+  return (log[email]?.[today]) || 0;
+}
+function recordAd(email) {
+  const log = getAdLog();
+  const today = new Date().toDateString();
+  if (!log[email]) log[email] = {};
+  log[email][today] = (log[email][today]||0) + 1;
+  DB.set('ec_adlog', log);
+}
+
+// Seed admin
+(function init() {
+  const u = getUsers();
+  if (!u['linex@gmail.com']) {
+    u['linex@gmail.com'] = { email:'linex@gmail.com', name:'Admin', password:'linex123', coins:0, totalEarned:0, isAdmin:true, createdAt:new Date().toISOString() };
+    saveUsers(u);
+  }
+})();
+
+// ══════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════
+function switchTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
+  document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = tab==='signup' ? 'block' : 'none';
+}
+
+function doLogin() {
+  const email = document.getElementById('l-email').value.trim().toLowerCase();
+  const pass = document.getElementById('l-pass').value;
+  const err = document.getElementById('l-err');
+  err.textContent = '';
+  const users = getUsers();
+  const user = users[email];
+  if (!user) { err.textContent = 'Account not found.'; return; }
+  if (user.password !== pass) { err.textContent = 'Wrong password.'; return; }
+  DB.set(DB.CUR, email);
+  if (user.isAdmin) { window.location.href = 'admin.html'; return; }
+  launchApp(user);
+}
+
+function doSignup() {
+  const name = document.getElementById('s-name').value.trim();
+  const email = document.getElementById('s-email').value.trim().toLowerCase();
+  const pass = document.getElementById('s-pass').value;
+  const err = document.getElementById('s-err');
+  err.textContent = '';
+  if (!name) { err.textContent = 'Enter your name.'; return; }
+  if (!/^\S+@\S+\.\S+$/.test(email)) { err.textContent = 'Enter valid email.'; return; }
+  if (pass.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
+  const users = getUsers();
+  if (users[email]) { err.textContent = 'Email already registered.'; return; }
+  users[email] = { email, name, password:pass, coins:0, totalEarned:0, isAdmin:false, createdAt:new Date().toISOString() };
+  saveUsers(users);
+  DB.set(DB.CUR, email);
+  launchApp(users[email]);
+}
+
+function doLogout() {
+  showConfirm('Logout karna chahte ho?', 'LOGOUT', () => {
+    localStorage.removeItem(DB.CUR); location.reload();
+  });
+}
+
+// ══════════════════════════════════════════════
+//  APP
+// ══════════════════════════════════════════════
+function launchApp(user) {
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('app-screen').classList.add('active');
+  refreshUI();
+}
+
+function refreshUI() {
+  const user = getCurrent();
+  if (!user) return;
+  const s = getSettings();
+
+  // Top bar
+  document.getElementById('app-title-bar').textContent = (s.appName||'EarnCoins').toUpperCase();
+  document.getElementById('top-coins').textContent = (user.coins||0).toLocaleString();
+
+  // Home
+  const av = user.name.charAt(0).toUpperCase();
+  document.getElementById('home-avatar').textContent = av;
+  document.getElementById('home-name').textContent = user.name;
+  document.getElementById('home-email').textContent = user.email;
+  document.getElementById('home-coins').textContent = (user.coins||0).toLocaleString();
+  document.getElementById('home-sub').textContent = user.totalEarned > 0 ? 'Total earned: ' + (user.totalEarned||0).toLocaleString() + ' coins' : 'Watch ads to earn';
+
+  // Coins labels
+  document.getElementById('inter-coins-lbl').textContent = '+' + (s.interstitialCoins||5);
+  document.getElementById('reward-coins-lbl').textContent = '+' + (s.rewardedCoins||10);
+
+  // Stats
+  document.getElementById('stat-today').textContent = getTodayAds(user.email);
+  document.getElementById('stat-total').textContent = (user.totalEarned||0).toLocaleString();
+
+  // Profile
+  document.getElementById('prof-avatar').textContent = av;
+  document.getElementById('prof-name').textContent = user.name;
+  document.getElementById('prof-email').textContent = user.email;
+  document.getElementById('redeem-bal').textContent = (user.coins||0).toLocaleString() + ' 🪙';
+  document.getElementById('redeem-sub').textContent = 'Min ' + (s.minRedeem||100) + ' coins to redeem';
+
+  // Redeem opts
+  const opts = getRedeemOpts().filter(o => o.active);
+  const container = document.getElementById('redeem-opts-list');
+  if (!opts.length) {
+    container.innerHTML = '<div class="no-opts">No redeem options yet.<br>Admin will add them soon.</div>';
+  } else {
+    container.innerHTML = opts.map(o => {
+      const canAfford = (user.coins||0) >= o.coins;
+      return `<div class="redeem-opt ${!canAfford?'disabled':''}" onclick="${canAfford?`openRedeem(${o.id})`:''}">
+        <div class="ro-left">
+          <div class="ro-title">${o.title}</div>
+          <div class="ro-desc">${o.description}</div>
+        </div>
+        <div class="ro-coins">${o.coins.toLocaleString()} <span>coins</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Ad limit check
+  const todayCount = getTodayAds(user.email);
+  const limit = s.dailyLimit || 20;
+  const overLimit = todayCount >= limit;
+  document.getElementById('btn-interstitial').disabled = overLimit;
+  document.getElementById('btn-rewarded').disabled = overLimit;
+}
+
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+//  ADS
+// ══════════════════════════════════════════════
+let currentAdType = null;
+let adInterval = null;
+
+function watchAd(type) {
+  const user = getCurrent();
+  const s = getSettings();
+  const limit = s.dailyLimit || 20;
+  if (getTodayAds(user.email) >= limit) { showToast('Daily limit reached!'); return; }
+
+  currentAdType = type;
+  const isReward = type === 'rewarded';
+  const duration = isReward ? 30 : 15;
+
+  // Show overlay
+  const overlay = document.getElementById('ad-overlay');
+  const badge = document.getElementById('ad-badge');
+  const fill = document.getElementById('ad-fill');
+  const timerTxt = document.getElementById('ad-timer-txt');
+  const skipBtn = document.getElementById('ad-skip-btn');
+
+  badge.textContent = type.toUpperCase();
+  badge.className = 'ad-type-badge ' + (isReward ? 'reward' : 'inter');
+  fill.className = 'ad-timer-fill ' + (isReward ? 'reward' : 'inter');
+  fill.style.width = '0%';
+  skipBtn.style.display = 'none';
+  timerTxt.textContent = duration + 's';
+  overlay.classList.add('show');
+
+  // Try Unity Ads first
+  const gameId = s.unityGameId;
+  const placementId = isReward ? s.rewardedPlacementId : s.interstitialPlacementId;
+
+  if (gameId && window.unityads && window.unityads.isReady && window.unityads.isReady(placementId)) {
+    window.unityads.show(placementId, {
+      onComplete: () => { overlay.classList.remove('show'); giveCoins(type); },
+      onSkipped: () => { overlay.classList.remove('show'); showToast('Watch full ad to earn!'); },
+      onError: () => { overlay.classList.remove('show'); showToast('Ad failed. Try again.'); }
+    });
+    return;
+  }
+
+  // Simulation fallback
+  let elapsed = 0;
+  adInterval = setInterval(() => {
+    elapsed++;
+    const pct = (elapsed / duration) * 100;
+    fill.style.width = pct + '%';
+    timerTxt.textContent = (duration - elapsed) + 's';
+    if (!isReward && elapsed >= 5) skipBtn.style.display = 'block';
+    if (elapsed >= duration) {
+      clearInterval(adInterval);
+      overlay.classList.remove('show');
+      giveCoins(type);
+    }
+  }, 1000);
+}
+
+function skipAd() {
+  clearInterval(adInterval);
+  document.getElementById('ad-overlay').classList.remove('show');
+  showToast('⚠️ Skipped — no coins earned');
+}
+
+function giveCoins(type) {
+  const user = getCurrent();
+  const s = getSettings();
+  const amount = type === 'rewarded' ? (s.rewardedCoins||10) : (s.interstitialCoins||5);
+  addCoins(user.email, amount);
+  recordAd(user.email);
+  refreshUI();
+  showToast('🪙 +' + amount + ' coins earned!');
+}
+
+// ══════════════════════════════════════════════
+//  REDEEM
+// ══════════════════════════════════════════════
+let activeRedeemId = null;
+const TYPE_LABELS = { upi:'Your UPI ID', paytm:'Paytm Number', code:'Your Email', gift:'Your Email', custom:'Your Details' };
+
+function openRedeem(id) {
+  const opts = getRedeemOpts();
+  const opt = opts.find(o => o.id === id);
+  if (!opt) return;
+  activeRedeemId = id;
+  document.getElementById('modal-title').textContent = opt.title.toUpperCase();
+  document.getElementById('modal-field-label').textContent = TYPE_LABELS[opt.type] || 'Details';
+  document.getElementById('modal-input').value = '';
+  document.getElementById('redeem-modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('redeem-modal').classList.remove('show');
+  activeRedeemId = null;
+}
+
+function submitRedeem() {
+  const details = document.getElementById('modal-input').value.trim();
+  if (!details) { showToast('Enter your details'); return; }
+  const user = getCurrent();
+  const opts = getRedeemOpts();
+  const opt = opts.find(o => o.id === activeRedeemId);
+  if (!opt) return;
+  if ((user.coins||0) < opt.coins) { showToast('Not enough coins!'); return; }
+
+  // Deduct coins
+  const users = getUsers();
+  users[user.email].coins -= opt.coins;
+  saveUsers(users);
+
+  // Save request
+  const reqs = getRedeemReqs();
+  reqs.unshift({ id:Date.now(), email:user.email, name:user.name, optionId:opt.id, optionTitle:opt.title, coins:opt.coins, details, type:opt.type, status:'pending', createdAt:new Date().toISOString() });
+  DB.set(DB.REDEEM_REQS, reqs);
+
+  closeModal();
+  refreshUI();
+  showToast('✅ Request submitted!');
+}
+
+// ══════════════════════════════════════════════
+//  CUSTOM CONFIRM & INPUT
+// ══════════════════════════════════════════════
+let _confirmCb = null;
+function showConfirm(msg, btnLabel, cb, isRed=false, icon='⚠️') {
+  document.getElementById('cf-msg').textContent = msg;
+  document.getElementById('cf-icon').textContent = icon;
+  document.getElementById('cf-btn').textContent = btnLabel;
+  document.getElementById('cf-btn').className = 'cf-confirm' + (isRed?' red':'');
+  _confirmCb = cb;
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+function doConfirm() {
+  closeConfirm();
+  if (_confirmCb) _confirmCb();
+}
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('show');
+  _confirmCb = null;
+}
+
+let _inputCb = null;
+function showInput(title, sub, defaultVal, cb) {
+  document.getElementById('ib-title').textContent = title;
+  document.getElementById('ib-sub').textContent = sub;
+  document.getElementById('ib-input').value = defaultVal || '';
+  _inputCb = cb;
+  document.getElementById('input-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('ib-input').focus(), 100);
+}
+function doInput() {
+  const val = document.getElementById('ib-input').value;
+  closeInput();
+  if (_inputCb) _inputCb(val);
+}
+function closeInput() {
+  document.getElementById('input-overlay').classList.remove('show');
+  _inputCb = null;
+}
+
+// ══════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  const user = getCurrent();
+  if (user && !user.isAdmin) launchApp(user);
+});
+</script>
+</body>
+</html>
